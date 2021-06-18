@@ -4,9 +4,9 @@ packages:
   amap_core:
     dependency: "direct main"
     description:
-      name: amap_core
-      url: "https://pub.dartlang.org"
-    source: hosted
+      path: "../amap_view"
+      relative: true
+    source: path
     version: "1.0.1"
   async:
     dependency: transitive

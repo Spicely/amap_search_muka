@@ -67,16 +67,34 @@ class Convert {
             return data
         }
 
-        fun toArr(result: PoiResult): Any {
-            val arr = mutableListOf<Any>()
-            result.pois.forEachIndexed { _, it ->
+        fun toJson(result: PoiResult): Any {
+            val params = HashMap<String, Any>()
+            val pois = mutableListOf<Any>()
+
+            val query =  HashMap<String, Any>()
+            val queryLocation =  HashMap<String, Any>()
+            queryLocation["latitude"] = result.query.location.latitude
+            queryLocation["longitude"] = result.query.location.longitude
+            query["building"] = result.query.building
+            query["category"]  = result.query.category
+            query["city"]  = result.query.city
+            query["cityLimit"]  = result.query.cityLimit
+            query["extensions"]  = result.query.extensions
+            query["isDistanceSort"]  = result.query.isDistanceSort
+            query["isSpecial"]  = result.query.isSpecial
+            query["pageNum"]  = result.query.pageNum
+            query["pageSize"]  = result.query.pageSize
+            query["queryString"]  = result.query.queryString
+            query["location"]  = queryLocation
+
+            result.pois.forEachIndexed { index, it ->
                 run {
                     val data = HashMap<String, Any>()
-                    data["uid"] = it.poiId
-                    data["name"] = it.adName
-                    data["type"] = it.typeDes
-                    data["typecode"] = it.typeCode
-                    data["address"] = it.snippet
+                    data["poiId"] = it.poiId
+                    data["name"] = result.searchSuggestionKeywords[index]
+                    data["typeDes"] = it.typeDes
+                    data["typeCode"] = it.typeCode
+                    data["address"] = it.adName
                     data["tel"] = it.tel
                     data["distance"] = it.distance
                     data["parkingType"] = it.parkingType
@@ -85,21 +103,29 @@ class Convert {
                     data["website"] = it.website
                     data["email"] = it.email
                     data["province"] = it.provinceName
-                    data["pcode"] = it.provinceCode
+                    data["provinceCode"] = it.provinceCode
                     data["city"] = it.cityName
-                    data["citycode"] = it.cityCode
-                    data["district"] = it.adName
-                    data["adcode"] = it.postcode
-                    // data["gridcode"] = it.id
+                    data["cityCode"] = it.cityCode
+                    data["adCode"] = it.adCode
                     data["direction"] = it.direction
-                    data["hasIndoorMap"] = it.isIndoorMap
+                    data["isIndoorMap"] = it.isIndoorMap
                     data["businessArea"] = it.businessArea
                     data["latitude"] = it.latLonPoint.latitude
                     data["longitude"] = it.latLonPoint.longitude
-                    arr.add(data)
+                    pois.add(data)
                 }
             }
-            return arr
+
+            params["searchSuggestionKeywords"] =  result.searchSuggestionKeywords
+            params["pageCount"] = result.pageCount
+            params["query"] = query
+
+            params["bound"] = result.pageCount
+            params["searchSuggestionCitys"] = result.searchSuggestionCitys
+            params["pois"] = pois
+            result.searchSuggestionCitys
+//            params[""] = result.
+            return params
         }
 
         fun toArr(result: MutableList<Tip>): Any {

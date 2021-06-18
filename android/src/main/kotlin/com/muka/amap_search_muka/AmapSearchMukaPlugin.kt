@@ -188,7 +188,7 @@ class AmapSearchMukaPlugin : FlutterPlugin, MethodCallHandler,
         if (result == null) {
             this.poiKeywordsSkin.success(emptyArray<Any>())
         } else {
-            this.poiKeywordsSkin.success(Convert.toArr(result))
+            this.poiKeywordsSkin.success(Convert.toJson(result))
         }
     }
 
