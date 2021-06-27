@@ -5,6 +5,7 @@ import com.amap.api.maps.model.LatLng
 import com.amap.api.services.geocoder.RegeocodeResult
 import com.amap.api.services.help.Tip
 import com.amap.api.services.poisearch.PoiResult
+import io.flutter.Log
 
 class Convert {
     companion object {
@@ -86,12 +87,13 @@ class Convert {
             query["pageSize"]  = result.query.pageSize
             query["queryString"]  = result.query.queryString
             query["location"]  = queryLocation
+            Log.d("-----------", queryLocation.toString())
 
-            result.pois.forEachIndexed { index, it ->
+            result.pois.forEachIndexed { _, it ->
                 run {
                     val data = HashMap<String, Any>()
                     data["poiId"] = it.poiId
-                    data["name"] = result.searchSuggestionKeywords[index]
+//                    data["name"] = it.adName
                     data["typeDes"] = it.typeDes
                     data["typeCode"] = it.typeCode
                     data["address"] = it.adName
@@ -119,12 +121,8 @@ class Convert {
             params["searchSuggestionKeywords"] =  result.searchSuggestionKeywords
             params["pageCount"] = result.pageCount
             params["query"] = query
-
-            params["bound"] = result.pageCount
             params["searchSuggestionCitys"] = result.searchSuggestionCitys
             params["pois"] = pois
-            result.searchSuggestionCitys
-//            params[""] = result.
             return params
         }
 

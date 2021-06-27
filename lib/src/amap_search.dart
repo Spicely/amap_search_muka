@@ -27,14 +27,14 @@ class AmapSearch {
   /// pageSize 每页返回的个数
   ///
   /// pageNum 第几页
-  static Future<List<SearchPoi>> poiKeywordsSearch(
+  static Future<PoiSearchResult> poiKeywordsSearch(
     String keywords, {
     String? city,
     LatLng? location,
     int? pageSize,
     int? pageNum,
   }) async {
-    dynamic pois = await _channel.invokeMethod('poiKeywordsSearch', {
+    dynamic json = await _channel.invokeMethod('poiKeywordsSearch', {
       'keywords': keywords,
       'city': city,
       'latitude': location?.latitude,
@@ -42,7 +42,7 @@ class AmapSearch {
       'pageSize': pageSize,
       'pageNum': pageNum,
     });
-    return List<SearchPoi>.from(pois.map((i) => SearchPoi.fromJson(i)));
+    return PoiSearchResult.fromJson(json);
   }
 
   /// POI 周边查询
@@ -56,20 +56,20 @@ class AmapSearch {
   /// pageNum 第几页
   ///
   /// range 半径范围
-  static Future<List<SearchPoi>> poiPeripherySearch(
+  static Future<PoiSearchResult> poiPeripherySearch(
     LatLng location, {
     int range = 1000,
     int? pageSize,
     int? pageNum,
   }) async {
-    dynamic pois = await _channel.invokeMethod('poiPeripherySearch', {
+    dynamic json = await _channel.invokeMethod('poiPeripherySearch', {
       'latitude': location.latitude,
       'longitude': location.longitude,
       'pageSize': pageSize,
       'pageNum': pageNum,
       'range': range,
     });
-    return List<SearchPoi>.from(pois.map((i) => SearchPoi.fromJson(i)));
+    return PoiSearchResult.fromJson(json);
   }
 
   /// 输入提示查询

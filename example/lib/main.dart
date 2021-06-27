@@ -52,8 +52,8 @@ class _MyAppState extends State<MyApp> {
               child: Text('获取POI'),
               onPressed: () async {
                 print('获取POI');
-                List<SearchPoi> pois = await AmapSearch.poiKeywordsSearch('火车站', city: '成都');
-                print(pois.toList());
+                PoiSearchResult poi = await AmapSearch.poiKeywordsSearch('火车站', city: '成都');
+                print(poi.toJson());
               },
             ),
             ElevatedButton(
