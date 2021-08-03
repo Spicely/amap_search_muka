@@ -72,28 +72,32 @@ class Convert {
             val params = HashMap<String, Any>()
             val pois = mutableListOf<Any>()
 
-            val query =  HashMap<String, Any>()
-            val queryLocation =  HashMap<String, Any>()
-            queryLocation["latitude"] = result.query.location.latitude
-            queryLocation["longitude"] = result.query.location.longitude
+            val query = HashMap<String, Any?>()
+            var queryLocation: HashMap<String, Double?>? = null
+            if (result.query.location?.latitude != null) {
+                queryLocation = HashMap<String, Double?>()
+                queryLocation["latitude"] = result.query.location.latitude
+                queryLocation["longitude"] = result.query.location.longitude
+            }
             query["building"] = result.query.building
-            query["category"]  = result.query.category
-            query["city"]  = result.query.city
-            query["cityLimit"]  = result.query.cityLimit
-            query["extensions"]  = result.query.extensions
-            query["isDistanceSort"]  = result.query.isDistanceSort
-            query["isSpecial"]  = result.query.isSpecial
-            query["pageNum"]  = result.query.pageNum
-            query["pageSize"]  = result.query.pageSize
-            query["queryString"]  = result.query.queryString
-            query["location"]  = queryLocation
-            Log.d("-----------", queryLocation.toString())
+            query["category"] = result.query.category
+            query["city"] = result.query.city
+            query["cityLimit"] = result.query.cityLimit
+            query["extensions"] = result.query.extensions
+            query["isDistanceSort"] = result.query.isDistanceSort
+            query["isSpecial"] = result.query.isSpecial
+            query["pageNum"] = result.query.pageNum
+            query["pageSize"] = result.query.pageSize
+            query["queryString"] = result.query.queryString
+            query["location"] = queryLocation
+
 
             result.pois.forEachIndexed { _, it ->
                 run {
-                    val data = HashMap<String, Any>()
+                    val data = HashMap<String, Any?>()
+                    var latLonPoint = HashMap<String, Double?>()
                     data["poiId"] = it.poiId
-//                    data["name"] = it.adName
+                    data["title"] = it.title
                     data["typeDes"] = it.typeDes
                     data["typeCode"] = it.typeCode
                     data["address"] = it.adName
@@ -112,16 +116,21 @@ class Convert {
                     data["direction"] = it.direction
                     data["isIndoorMap"] = it.isIndoorMap
                     data["businessArea"] = it.businessArea
-                    data["latitude"] = it.latLonPoint.latitude
-                    data["longitude"] = it.latLonPoint.longitude
+                    latLonPoint["latitude"] = it.latLonPoint.latitude
+                    latLonPoint["longitude"] = it.latLonPoint.longitude
+                    data["latLonPoint"] = latLonPoint
                     pois.add(data)
                 }
             }
 
-            params["searchSuggestionKeywords"] =  result.searchSuggestionKeywords
+            var searchSuggestionKeywords = mutableListOf<String>()
+            var searchSuggestionCitys = mutableListOf<String>()
+            result.searchSuggestionKeywords.forEach { searchSuggestionKeywords.add(it) }
+            result.searchSuggestionCitys.forEach { searchSuggestionCitys.add(it.cityName) }
+            params["searchSuggestionKeywords"] = searchSuggestionKeywords
             params["pageCount"] = result.pageCount
             params["query"] = query
-            params["searchSuggestionCitys"] = result.searchSuggestionCitys
+            params["searchSuggestionCitys"] = searchSuggestionCitys
             params["pois"] = pois
             return params
         }
