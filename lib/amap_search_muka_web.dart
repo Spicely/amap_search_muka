@@ -1,17 +1,17 @@
 import 'dart:async';
-import 'dart:js';
 
 import 'package:amap_core/amap_core.dart';
+import 'package:amap_search_muka/web/amap.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
+import 'package:js/js.dart';
 
 import 'amap_search_muka.dart';
 
-/// A web implementation of the AmapLocationMuka plugin.
 class AmapSearchMukaWeb {
   static void registerWith(Registrar registrar) {
     final MethodChannel channel = MethodChannel(
-      'amap_search_muka',
+      'plugins.muka.com/amap_search',
       const StandardMethodCodec(),
       registrar,
     );
@@ -26,9 +26,12 @@ class AmapSearchMukaWeb {
   Future<dynamic> handleMethodCall(MethodCall call) async {
     switch (call.method) {
       case 'convert':
-        print(call.arguments);
-        return '111';
-      // return convert(call.arguments[]);
+      // return convert(LatLng.fromJson(call.arguments['latlng']), type: call.arguments['type'] as int);
+      case 'calculateArea':
+        return Future.value(ringArea(call.arguments['calculate']));
+      case 'calculateLineDistance':
+        return Future.value(
+            distanceOfLine((call.arguments['calculate'] as List).map((e) => LngLat(e['longitude'], e['latitude'])).toList()));
       default:
         throw PlatformException(
           code: 'Unimplemented',
@@ -38,13 +41,13 @@ class AmapSearchMukaWeb {
   }
 
   /// Returns a [Location]
-  Future<dynamic> convert(LatLng latLng, {ConvertType type = ConvertType.GPS}) {
+  Future<dynamic> convert(LatLng latLng, int type) {
     Completer completer = Completer<Map<String, dynamic>>();
     MapOptions _mapOptions = MapOptions(
       zoom: 0,
       viewMode: '2D',
     );
-    AMap aMap = AMap('location', _mapOptions);
+    AMap aMap = AMap('container', _mapOptions);
 
     aMap.plugin(['AMap.Geolocation'], allowInterop(() {
       Geolocation geolocation = Geolocation(GeoOptions());

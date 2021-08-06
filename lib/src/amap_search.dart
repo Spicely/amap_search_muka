@@ -118,18 +118,14 @@ class AmapSearch {
   }
 
   /// 直线距离计算
-  static Future<double> calculateLineDistance(LatLng start, LatLng end) async {
-    return await _channel.invokeMethod('calculateLineDistance', {
-      "start": start.toJson(),
-      "end": end.toJson(),
-    });
+  static Future<double> calculateLineDistance(List<LatLng> calculate) async {
+    return await _channel.invokeMethod('calculateLineDistance', {'calculate': calculate.map((e) => e.toJson()).toList()});
   }
 
   /// 面积计算
-  static Future<double> calculateArea(LatLng start, LatLng end) async {
+  static Future<double> calculateArea(List<LatLng> areas) async {
     return await _channel.invokeMethod('calculateArea', {
-      "start": start.toJson(),
-      "end": end.toJson(),
+      'calculate': areas.map((e) => [e.longitude, e.latitude]).toList()
     });
   }
 }

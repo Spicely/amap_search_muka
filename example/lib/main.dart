@@ -37,14 +37,21 @@ class _MyAppState extends State<MyApp> {
             ElevatedButton(
               child: Text('面积'),
               onPressed: () async {
-                double area = await AmapSearch.calculateArea(LatLng(30.766903, 103.955872), LatLng(30.577889, 104.169418));
+                double area = await AmapSearch.calculateArea([
+                  LatLng(39.932670, 116.169465),
+                  LatLng(39.924492, 116.160260),
+                  LatLng(39.710019, 116.150625),
+                  LatLng(39.709920, 116.183198),
+                  LatLng(39.777616, 116.226950),
+                  LatLng(40.052578, 116.468800),
+                ]);
                 print(area);
               },
             ),
             ElevatedButton(
               child: Text('直线距离'),
               onPressed: () async {
-                double distance = await AmapSearch.calculateLineDistance(LatLng(30.766903, 103.955872), LatLng(30.577889, 104.169418));
+                double distance = await AmapSearch.calculateLineDistance([LatLng(30.766903, 103.955872), LatLng(30.577889, 104.169418)]);
                 print(distance);
               },
             ),
