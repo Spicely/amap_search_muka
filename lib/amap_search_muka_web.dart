@@ -1,13 +1,11 @@
 import 'dart:async';
-import 'dart:async';
-// In order to *not* need this ignore, consider extracting the "web" version
-// of your plugin as a separate package, instead of inlining it in the same
-// package as the core of your plugin.
-// ignore: avoid_web_libraries_in_flutter
-import 'dart:html' as html show window;
+import 'dart:js';
 
+import 'package:amap_core/amap_core.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
+
+import 'amap_search_muka.dart';
 
 /// A web implementation of the AmapLocationMuka plugin.
 class AmapSearchMukaWeb {
@@ -27,8 +25,10 @@ class AmapSearchMukaWeb {
   /// https://flutter.dev/go/federated-plugins
   Future<dynamic> handleMethodCall(MethodCall call) async {
     switch (call.method) {
-      case 'getPlatformVersion':
-        return getPlatformVersion();
+      case 'convert':
+        print(call.arguments);
+        return '111';
+      // return convert(call.arguments[]);
       default:
         throw PlatformException(
           code: 'Unimplemented',
@@ -37,9 +37,36 @@ class AmapSearchMukaWeb {
     }
   }
 
-  /// Returns a [String] containing the version of the platform.
-  Future<String> getPlatformVersion() {
-    final version = html.window.navigator.userAgent;
-    return Future.value(version);
+  /// Returns a [Location]
+  Future<dynamic> convert(LatLng latLng, {ConvertType type = ConvertType.GPS}) {
+    Completer completer = Completer<Map<String, dynamic>>();
+    MapOptions _mapOptions = MapOptions(
+      zoom: 0,
+      viewMode: '2D',
+    );
+    AMap aMap = AMap('location', _mapOptions);
+
+    aMap.plugin(['AMap.Geolocation'], allowInterop(() {
+      Geolocation geolocation = Geolocation(GeoOptions());
+      aMap.addControl(geolocation);
+      geolocation.getCurrentPosition(allowInterop((status, result) {
+        if (status == 'complete') {
+          completer.complete(Location(
+            latitude: result.position.lat,
+            longitude: result.position.lng,
+            country: result.addressComponent.country,
+            province: result.addressComponent.province,
+            city: result.addressComponent.city,
+            district: result.addressComponent.district,
+            street: result.addressComponent.street,
+            address: result.formattedAddress,
+            accuracy: 0.0,
+          ).toJson());
+        } else {
+          completer.completeError(result.message);
+        }
+      }));
+    }));
+    return completer.future;
   }
 }

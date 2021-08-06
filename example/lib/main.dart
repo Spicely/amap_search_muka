@@ -31,7 +31,7 @@ class _MyAppState extends State<MyApp> {
               child: Text('坐标转换'),
               onPressed: () async {
                 LatLng pos = await AmapSearch.convert(LatLng(40.012044, 116.332404), type: ConvertType.BAIDU);
-                print(pos);
+                print(pos.toJson());
               },
             ),
             ElevatedButton(
