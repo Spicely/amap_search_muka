@@ -1,7 +1,6 @@
 package com.muka.amap_search_muka
 
-import com.amap.api.location.DPoint
-import com.amap.api.maps.model.LatLng
+import com.amap.api.services.core.LatLonPoint
 import com.amap.api.services.geocoder.RegeocodeResult
 import com.amap.api.services.help.Tip
 import com.amap.api.services.poisearch.PoiResult
@@ -15,83 +14,54 @@ class Convert {
             return o as HashMap<String, Any>
         }
 
-        fun toLatLng(o: Any?): LatLng? {
-            if (o == null) {
-                return null
-            }
-            var data = toMap(o)
-            var latitude = data["latitude"]
-            var longitude = data["longitude"]
-            if (latitude != null && longitude != null) {
-                return LatLng(toDouble(latitude), toDouble(longitude))
-            }
-            return null
-        }
-
-        fun toDouble(o: Any): Double {
-            return o as Double
-        }
-
-        fun toDPoint(o: Any?): DPoint? {
-            if (o == null) {
-                return null
-            }
-            var data = toMap(o)
-            if (data["latitude"] != null && data["longitude"] != null) {
-                return DPoint(data["latitude"] as Double, data["longitude"] as Double)
-            }
-            return null
-        }
-
-        fun toJson(point: DPoint): Any {
-            val data = HashMap<String, Any>()
-            data["latitude"] = point.latitude
-            data["longitude"] = point.longitude
-            return data
-        }
-
-        fun toJson(result: RegeocodeResult): Any {
-            val data = HashMap<String, Any>()
-            data["building"] = result.regeocodeAddress.building
-            data["towncode"] = result.regeocodeAddress.towncode
-            data["township"] = result.regeocodeAddress.township
-            data["adcode"] = result.regeocodeAddress.adCode
-            data["city"] = result.regeocodeAddress.city
-            data["citycode"] = result.regeocodeAddress.cityCode
-            data["neighborhood"] = result.regeocodeAddress.neighborhood
-            data["country"] = result.regeocodeAddress.country
-            data["formatAddress"] = result.regeocodeAddress.formatAddress
-            data["province"] = result.regeocodeAddress.province
-            data["district"] = result.regeocodeAddress.district
-            data["streetNumber"] = result.regeocodeAddress.streetNumber.number
-            data["pois"] = result.regeocodeAddress.pois
-            return data
-        }
-
-        fun toJson(result: PoiResult): Any {
-            val params = HashMap<String, Any>()
+//        fun toLatLng(o: Any?): LatLng? {
+//            if (o == null) {
+//                return null
+//            }
+//            var data = toMap(o)
+//            var latitude = data["latitude"]
+//            var longitude = data["longitude"]
+//            if (latitude != null && longitude != null) {
+//                return LatLng(toDouble(latitude), toDouble(longitude))
+//            }
+//            return null
+//        }
+//
+//        fun toDouble(o: Any): Double {
+//            return o as Double
+//        }
+//
+//        fun toDPoint(o: Any?): DPoint? {
+//            if (o == null) {
+//                return null
+//            }
+//            var data = toMap(o)
+//            if (data["latitude"] != null && data["longitude"] != null) {
+//                return DPoint(data["latitude"] as Double, data["longitude"] as Double)
+//            }
+//            return null
+//        }
+//
+//        fun toJson(result: RegeocodeResult): Any {
+//            val data = HashMap<String, Any>()
+//            data["building"] = result.regeocodeAddress.building
+//            data["towncode"] = result.regeocodeAddress.towncode
+//            data["township"] = result.regeocodeAddress.township
+//            data["adcode"] = result.regeocodeAddress.adCode
+//            data["city"] = result.regeocodeAddress.city
+//            data["citycode"] = result.regeocodeAddress.cityCode
+//            data["neighborhood"] = result.regeocodeAddress.neighborhood
+//            data["country"] = result.regeocodeAddress.country
+//            data["formatAddress"] = result.regeocodeAddress.formatAddress
+//            data["province"] = result.regeocodeAddress.province
+//            data["district"] = result.regeocodeAddress.district
+//            data["streetNumber"] = result.regeocodeAddress.streetNumber.number
+//            data["pois"] = result.regeocodeAddress.pois
+//            return data
+//        }
+//
+        fun toArr(result: PoiResult): Any {
             val pois = mutableListOf<Any>()
-
-            val query = HashMap<String, Any?>()
-            var queryLocation: HashMap<String, Double?>? = null
-            if (result.query.location?.latitude != null) {
-                queryLocation = HashMap<String, Double?>()
-                queryLocation["latitude"] = result.query.location.latitude
-                queryLocation["longitude"] = result.query.location.longitude
-            }
-            query["building"] = result.query.building
-            query["category"] = result.query.category
-            query["city"] = result.query.city
-            query["cityLimit"] = result.query.cityLimit
-            query["extensions"] = result.query.extensions
-            query["isDistanceSort"] = result.query.isDistanceSort
-            query["isSpecial"] = result.query.isSpecial
-            query["pageNum"] = result.query.pageNum
-            query["pageSize"] = result.query.pageSize
-            query["queryString"] = result.query.queryString
-            query["location"] = queryLocation
-
-
             result.pois.forEachIndexed { _, it ->
                 run {
                     val data = HashMap<String, Any?>()
@@ -100,7 +70,7 @@ class Convert {
                     data["title"] = it.title
                     data["typeDes"] = it.typeDes
                     data["typeCode"] = it.typeCode
-                    data["address"] = it.adName
+                    data["address"] = it.snippet
                     data["tel"] = it.tel
                     data["distance"] = it.distance
                     data["parkingType"] = it.parkingType
@@ -116,23 +86,12 @@ class Convert {
                     data["direction"] = it.direction
                     data["isIndoorMap"] = it.isIndoorMap
                     data["businessArea"] = it.businessArea
-                    latLonPoint["latitude"] = it.latLonPoint.latitude
-                    latLonPoint["longitude"] = it.latLonPoint.longitude
-                    data["latLonPoint"] = latLonPoint
+                    data["latLng"] = pointToMap(it.latLonPoint)
+                    data["district"] = it.adName
                     pois.add(data)
                 }
             }
-
-            var searchSuggestionKeywords = mutableListOf<String>()
-            var searchSuggestionCitys = mutableListOf<String>()
-            result.searchSuggestionKeywords.forEach { searchSuggestionKeywords.add(it) }
-            result.searchSuggestionCitys.forEach { searchSuggestionCitys.add(it.cityName) }
-            params["searchSuggestionKeywords"] = searchSuggestionKeywords
-            params["pageCount"] = result.pageCount
-            params["query"] = query
-            params["searchSuggestionCitys"] = searchSuggestionCitys
-            params["pois"] = pois
-            return params
+            return pois
         }
 
         fun toArr(result: MutableList<Tip>): Any {
@@ -146,12 +105,18 @@ class Convert {
                     data["name"] = it.name
                     data["typecode"] = it.typeCode
                     data["uid"] = it.poiID
-                    data["latitude"] = it.point.latitude
-                    data["longitude"] = it.point.longitude
+                    data["latLng"] = pointToMap(it.point)
                     arr.add(data)
                 }
             }
             return arr
+        }
+
+        private fun pointToMap(point: LatLonPoint): MutableMap<String, Any> {
+            val pointMap: MutableMap<String, Any> = java.util.HashMap()
+            pointMap["latitude"] = point.latitude
+            pointMap["longitude"] = point.longitude
+            return pointMap
         }
     }
 }

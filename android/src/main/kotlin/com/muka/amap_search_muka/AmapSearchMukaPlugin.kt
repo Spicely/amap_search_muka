@@ -1,155 +1,86 @@
 package com.muka.amap_search_muka
 
+
+import android.content.Context
+import android.text.TextUtils
+
 import androidx.annotation.NonNull
-import com.amap.api.location.CoordinateConverter
-import com.amap.api.maps.AMapUtils
+
+import com.amap.api.services.core.AMapException
 import com.amap.api.services.core.LatLonPoint
 import com.amap.api.services.core.PoiItem
-import com.amap.api.services.geocoder.GeocodeResult
-import com.amap.api.services.geocoder.GeocodeSearch
-import com.amap.api.services.geocoder.RegeocodeQuery
-import com.amap.api.services.geocoder.RegeocodeResult
+import com.amap.api.services.core.ServiceSettings
 import com.amap.api.services.help.Inputtips
 import com.amap.api.services.help.InputtipsQuery
 import com.amap.api.services.help.Tip
 import com.amap.api.services.poisearch.PoiResult
 import com.amap.api.services.poisearch.PoiSearch
 
+import java.util.ArrayList
+import java.util.HashMap
+
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
-import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 
+
+
 /** AmapSearchMukaPlugin */
-class AmapSearchMukaPlugin : FlutterPlugin, MethodCallHandler,
-    GeocodeSearch.OnGeocodeSearchListener, PoiSearch.OnPoiSearchListener,
-    Inputtips.InputtipsListener {
+class AmapSearchMukaPlugin : FlutterPlugin, MethodChannel.MethodCallHandler,  PoiSearch.OnPoiSearchListener,Inputtips.InputtipsListener {
     /// The MethodChannel that will the communication between Flutter and native Android
     ///
     /// This local reference serves to register the plugin with the Flutter Engine and unregister it
     /// when the Flutter Engine is detached from the Activity
-    private lateinit var channel: MethodChannel
-    private lateinit var utilsChannel: MethodChannel
-    private lateinit var pluginBinding: FlutterPlugin.FlutterPluginBinding
-    private lateinit var regecodeSkin: Result
-    private lateinit var poiKeywordsSkin: Result
-    private lateinit var inputTipsSkin: Result
+    private var channel: MethodChannel? = null
+    private var mContext: Context? = null
+    private var resultCallback: Result? = null
+    private var poiSearch: PoiSearch? = null
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-        pluginBinding = flutterPluginBinding
+        mContext = flutterPluginBinding.applicationContext
         channel =
             MethodChannel(flutterPluginBinding.binaryMessenger, "plugins.muka.com/amap_search")
-        channel.setMethodCallHandler(this)
+        channel!!.setMethodCallHandler(this)
     }
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
         when (call.method) {
-            "convert" -> {
-                var latlng = Convert.toDPoint(call.argument("latlng"))
-                var coordType = call.argument<Int>("type") ?: 0
-                if (latlng != null) {
-                    var point = CoordinateConverter(pluginBinding.applicationContext).from(
-                        when (coordType) {
-                            1 -> CoordinateConverter.CoordType.BAIDU
-                            2 -> CoordinateConverter.CoordType.GOOGLE
-                            else -> CoordinateConverter.CoordType.GPS
-                        }
-                    ).coord(latlng).convert()
-                    result.success(Convert.toJson(point))
-                } else {
-                    result.success(null)
-                }
-            }
-            "calculateLineDistance" -> {
-                var start = Convert.toLatLng(call.argument("start"))
-                var end = Convert.toLatLng(call.argument("end"))
-                var distance = AMapUtils.calculateLineDistance(start, end)
-                result.success(distance)
-            }
-            "calculateArea" -> {
-                var start = Convert.toLatLng(call.argument("start"))
-                var end = Convert.toLatLng(call.argument("end"))
-                var distance = AMapUtils.calculateArea(start, end)
-                result.success(distance)
-            }
-            "reGeocodeSearch" -> {
-                var latitude = call.argument<Double>("latitude")
-                var longitude = call.argument<Double>("longitude")
-                var range = call.argument<Double>("range")
 
-                if (latitude != null && longitude != null) {
-                    var geocoderSearch = GeocodeSearch(pluginBinding.applicationContext)
-                    geocoderSearch.setOnGeocodeSearchListener(this)
-                    var query =
-                        RegeocodeQuery(
-                            LatLonPoint(latitude, longitude),
-                            range?.toFloat() ?: 200F, GeocodeSearch.AMAP
-                        );
-                    geocoderSearch.getFromLocationAsyn(query)
-                    this.regecodeSkin = result
+            "setApiKey" -> {
+                setApiKey(call.arguments as Map<*, *>)
+            }
+            "updatePrivacyStatement" -> {
+                updatePrivacyStatement(call.arguments as Map<*, *>)
+            }
+            "searchKeyword" -> {
+                try {
+                    searchKeyword(call.arguments as Map<*, *>, result)
+                } catch (e: AMapException) {
+                    e.printStackTrace()
                 }
             }
-            "poiKeywordsSearch" -> {
-                var keywords = call.argument<String>("keywords")
-                var city = call.argument<String>("city")
-                var pageSize = call.argument<Int>("pageSize") ?: 10
-                var pageNum = call.argument<Int>("pageNum") ?: 1
-                var latitude = call.argument<Double>("latitude")
-                var longitude = call.argument<Double>("longitude")
-                if (keywords != null) {
-                    var query = PoiSearch.Query(keywords, "", city)
-                    if (city != null) {
-                        query.cityLimit = true
-                    }
-                    if (latitude != null && longitude != null) {
-                        query.location = LatLonPoint(latitude, longitude)
-                    }
-                    query.pageSize = pageSize;// 设置每页最多返回多少条poiitem
-                    query.pageNum = pageNum;//设置查询页码
-                    var poiSearch = PoiSearch(pluginBinding.applicationContext, query)
-                    poiSearch.setOnPoiSearchListener(this)
-                    poiSearch.searchPOIAsyn()
-                    this.poiKeywordsSkin = result
+
+            "searchLatLng" -> {
+                try {
+                    searchLatLng(call.arguments as Map<*, *>, result)
+                } catch (e: AMapException) {
+                    e.printStackTrace()
                 }
             }
-            "poiPeripherySearch" -> {
-                var pageSize = call.argument<Int>("pageSize") ?: 10
-                var pageNum = call.argument<Int>("pageNum") ?: 1
-                var latitude = call.argument<Double>("latitude")
-                var longitude = call.argument<Double>("longitude")
-                var range = call.argument<Int>("range")
-                var query = PoiSearch.Query("", "")
-                query.pageSize = pageSize;// 设置每页最多返回多少条poiitem
-                query.pageNum = pageNum;//设置查询页码
-                var poiSearch = PoiSearch(pluginBinding.applicationContext, query)
-                poiSearch.bound = PoiSearch.SearchBound(
-                    LatLonPoint(
-                        latitude!!,
-                        longitude!!
-                    ), range ?: 1000
-                )
-                poiSearch.setOnPoiSearchListener(this)
-                poiSearch.searchPOIAsyn()
-                this.poiKeywordsSkin = result
+
+            "searchAround" -> {
+                try {
+                    searchAround(call.arguments as Map<*, *>, result)
+                } catch (e: AMapException) {
+                    e.printStackTrace()
+                }
             }
-            "inputTipsSearch" -> {
-                var keywords = call.argument<String>("keywords")
-                var city = call.argument<String>("city")
-                var latitude = call.argument<Double>("latitude")
-                var longitude = call.argument<Double>("longitude")
-                if (keywords != null) {
-                    var query = InputtipsQuery(keywords, city)
-                    if (city != null) {
-                        query.cityLimit = true
-                    }
-                    if (latitude != null && longitude != null) {
-                        query.location = LatLonPoint(latitude, longitude)
-                    }
-                    val inputTips = Inputtips(this.pluginBinding.applicationContext, query)
-                    inputTips.setInputtipsListener(this)
-                    inputTips.requestInputtipsAsyn()
-                    this.inputTipsSkin = result
+            "fetchInputTips" -> {
+                try {
+                    fetchInputTips(call.arguments as Map<*, *>, result)
+                } catch (e: AMapException) {
+                    e.printStackTrace()
                 }
             }
             else -> {
@@ -158,52 +89,150 @@ class AmapSearchMukaPlugin : FlutterPlugin, MethodCallHandler,
         }
     }
 
+
+
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
-        channel.setMethodCallHandler(null)
-        utilsChannel.setMethodCallHandler(null)
+        channel?.setMethodCallHandler(null)
     }
 
-    override fun onRegeocodeSearched(result: RegeocodeResult?, rCode: Int) {
-        //解析result获取地址描述信息
+    /**
+     * 设置apikey
+     *
+     * @param apiKeyMap
+     */
+    private fun setApiKey(apiKeyMap: Map<*, *>?) {
+        if (null != apiKeyMap) {
+            if (apiKeyMap.containsKey("android")
+                    && !TextUtils.isEmpty(apiKeyMap["android"] as String?)) {
+                ServiceSettings.getInstance().setApiKey(apiKeyMap["android"] as String?)
+            }
+        }
+    }
+
+    /**
+     * 隐私政策设置
+     *
+     * @param
+     */
+    private fun updatePrivacyStatement(privacyShowMap: Map<*, *>?) {
+        if (null != privacyShowMap) {
+            if (privacyShowMap.containsKey("hasContains") && privacyShowMap.containsKey("hasShow")) {
+                val hasContains = privacyShowMap["hasContains"] as Boolean
+                val hasShow = privacyShowMap["hasShow"] as Boolean
+                ServiceSettings.updatePrivacyShow(mContext, hasContains, hasShow)
+            }
+            if (privacyShowMap.containsKey("hasAgree")) {
+                val hasAgree = privacyShowMap["hasAgree"] as Boolean
+                ServiceSettings.updatePrivacyAgree(mContext, hasAgree)
+            }
+        }
+    }
+
+    /**
+     * POI 根据关键字搜索
+     *
+     * @param searchParams
+     */
+    @Throws(AMapException::class)
+    private fun searchKeyword(searchParams: Map<*, *>?, result: Result) {
+        if (null != searchParams) {
+            val keyword = searchParams["keyword"] as String?
+            val city = searchParams["city"] as String?
+            var pageSize = searchParams["pageSize"] ?: 20
+            var page = searchParams["page"] ?: 1
+            val query = PoiSearch.Query(keyword, "", city)
+            query.pageSize = pageSize as Int
+            query.pageNum = page as Int
+            poiSearch = PoiSearch(mContext, query)
+            poiSearch!!.setOnPoiSearchListener(this)
+            poiSearch!!.searchPOIAsyn()
+            resultCallback = result
+        }
+    }
+    @Throws(AMapException::class)
+    private fun searchLatLng(searchParams: Map<*, *>?, result: Result) {
+        if (null != searchParams) {
+            val city = searchParams["city"] as String?
+            val latitude = searchParams["latitude"] as Double?
+            val longitude = searchParams["longitude"] as Double?
+            var pageSize = searchParams["pageSize"] ?: 20
+            var range = searchParams["range"] as Int?
+            var page = searchParams["page"] ?: 1
+            val query = PoiSearch.Query("", "", city)
+            query.pageSize = pageSize as Int
+            query.pageNum = page as Int
+            poiSearch = PoiSearch(mContext, query)
+            poiSearch!!.bound = PoiSearch.SearchBound(LatLonPoint(latitude!!, longitude!!), range?:2000)
+            poiSearch!!.setOnPoiSearchListener(this)
+            poiSearch!!.searchPOIAsyn()
+            resultCallback = result
+        }
+    }
+
+    /**
+     * POI 搜索周边POI
+     *
+     * @param searchParams
+     */
+    @Throws(AMapException::class)
+    private fun searchAround(searchParams: Map<*, *>?, result: Result) {
+        if (null != searchParams) {
+            val keyword = searchParams["keyword"] as String?
+            val city = searchParams["city"] as String?
+            val latitude = searchParams["latitude"] as Double?
+            val longitude = searchParams["longitude"] as Double?
+            val query = PoiSearch.Query(keyword, "", city)
+            query.pageSize = 35
+            query.pageNum = 1
+            poiSearch = PoiSearch(mContext, query)
+            poiSearch!!.bound = PoiSearch.SearchBound(LatLonPoint(latitude!!, longitude!!), 1000)
+            poiSearch!!.setOnPoiSearchListener(this)
+            poiSearch!!.searchPOIAsyn()
+            resultCallback = result
+        }
+    }
+    @Throws(AMapException::class)
+    private fun fetchInputTips(inputParams: Map<*, *>?, result: Result) {
+        if (null != inputParams) {
+            val keyword = inputParams["keyword"] as String?
+            val city = inputParams["city"] as String?
+            val latitude = inputParams["latitude"] as Double?
+            val longitude = inputParams["longitude"] as Double?
+            val query = InputtipsQuery(keyword,  city)
+            if (city != null) {
+                query.cityLimit = true
+            }
+            if (latitude != null && longitude != null) {
+                query.location = LatLonPoint(latitude, longitude)
+            }
+            val inputTips  = Inputtips(mContext, query)
+            inputTips.setInputtipsListener(this)
+            inputTips.requestInputtipsAsyn()
+            resultCallback = result
+        }
+    }
+
+
+    override fun onPoiSearched(result: PoiResult, rCode: Int) {
         if (rCode != 1000) {
-            this.regecodeSkin.success(null)
-            return
+            resultCallback?.success(emptyArray<Any>())
         }
         if (result == null) {
-            this.regecodeSkin.success(null)
+            resultCallback?.success(emptyArray<Any>())
         } else {
-            this.regecodeSkin.success(Convert.toJson(result))
+            resultCallback?.success(Convert.toArr(result))
         }
     }
 
-    override fun onGeocodeSearched(p0: GeocodeResult?, p1: Int) {
-        TODO("Not yet implemented")
-    }
-
-    override fun onPoiSearched(result: PoiResult?, rCode: Int) {
-        //解析result获取POI信息
-        if (rCode != 1000) {
-            this.poiKeywordsSkin.success(emptyArray<Any>())
-        }
-        if (result == null) {
-            this.poiKeywordsSkin.success(emptyArray<Any>())
-        } else {
-            this.poiKeywordsSkin.success(Convert.toJson(result))
-        }
-    }
-
-    override fun onPoiItemSearched(p0: PoiItem?, p1: Int) {
-        TODO("Not yet implemented")
-    }
-
+    override fun onPoiItemSearched(poiItem: PoiItem?, i: Int) {}
     override fun onGetInputtips(result: MutableList<Tip>?, rCode: Int) {
         if (rCode != 1000) {
-            this.inputTipsSkin.success(emptyArray<Any>())
+            resultCallback?.success(emptyArray<Any>())
         }
         if (result == null) {
-            this.inputTipsSkin.success(emptyArray<Any>())
+            resultCallback?.success(emptyArray<Any>())
         } else {
-            this.inputTipsSkin.success(Convert.toArr(result))
+            resultCallback?.success(Convert.toArr(result))
         }
     }
 }
