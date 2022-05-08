@@ -13,8 +13,9 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   @override
   void initState() {
-    AMapSearch.setApiKey('6e630e675873f2a548f55ba99ee8c571', '56250708b9588800db63161534716f8c');
     AMapSearch.updatePrivacyShow(true, true);
+    AMapSearch.updatePrivacyAgree(true);
+    AMapSearch.setApiKey('6e630e675873f2a548f55ba99ee8c571', '56250708b9588800db63161534716f8c');
 
     super.initState();
   }
