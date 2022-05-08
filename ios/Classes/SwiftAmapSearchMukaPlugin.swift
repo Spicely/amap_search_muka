@@ -174,9 +174,9 @@ public class SwiftAmapSearchMukaPlugin: NSObject, FlutterPlugin, AMapSearchDeleg
             var data: Dictionary<String, Any> = [:]
             data["id"] = it.uid
             data["name"] = it.name
-            data["adcode"] = it.adcode
+            data["adCode"] = it.adcode
             data["address"] = it.address
-            data["typecode"] = it.typecode
+            data["typeCode"] = it.typecode
             data["latLng"] = pointToMap(latLng: it.location)
             data["district"] = it.district
             arr.append(data)
