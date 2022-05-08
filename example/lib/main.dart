@@ -1,6 +1,5 @@
 import 'package:amap_search_muka/amap_search_muka.dart';
 import 'package:flutter/material.dart';
-import 'package:amap_core/amap_core.dart';
 
 void main() {
   runApp(MyApp());
@@ -14,6 +13,9 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   @override
   void initState() {
+    AMapSearch.setApiKey('6e630e675873f2a548f55ba99ee8c571', '56250708b9588800db63161534716f8c');
+    AMapSearch.updatePrivacyShow(true, true);
+
     super.initState();
   }
 
@@ -55,21 +57,31 @@ class _MyAppState extends State<MyApp> {
             //     print(distance);
             //   },
             // ),
-            // ElevatedButton(
-            //   child: Text('获取POI'),
-            //   onPressed: () async {
-            //     print('获取POI');
-            //     PoiSearchResult poi = await AmapSearch.poiKeywordsSearch('饭店', city: '成都');
-            //     poi.pois.forEach((element) {
-            //       print(element.toJson());
-            //     });
-            //   },
-            // ),
+            ElevatedButton(
+              child: Text('获取POI'),
+              onPressed: () async {
+                print('获取POI');
+                List<AMapPoi> poi = await AMapSearch.searchKeyword('饭店', city: '成都', types: '地铁');
+                poi.forEach((element) {
+                  print(element.toJson());
+                });
+              },
+            ),
+            ElevatedButton(
+              child: Text('附近POI'),
+              onPressed: () async {
+                print('获取POI');
+                List<AMapPoi> poi = await AMapSearch.searchAround(LatLng(40.057598, 116.582822), types: '地铁');
+                poi.forEach((element) {
+                  print(element.toJson());
+                });
+              },
+            ),
             ElevatedButton(
               child: Text('获取输入提示'),
               onPressed: () async {
                 print('获取输入提示');
-                List<dynamic> pois = await AmapSearch.fetchInputTips('火车');
+                List<dynamic> pois = await AMapSearch.fetchInputTips('火车', city: '成都');
                 pois.forEach((element) {
                   print(element.toJson());
                 });

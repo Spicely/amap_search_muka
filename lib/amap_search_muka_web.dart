@@ -8,7 +8,7 @@ import 'package:js/js.dart';
 
 import 'amap_search_muka.dart';
 
-class AmapSearchMukaWeb {
+class AMapSearchMukaWeb {
   static void registerWith(Registrar registrar) {
     final MethodChannel channel = MethodChannel(
       'plugins.muka.com/amap_search',
@@ -16,7 +16,7 @@ class AmapSearchMukaWeb {
       registrar,
     );
 
-    final pluginInstance = AmapSearchMukaWeb();
+    final pluginInstance = AMapSearchMukaWeb();
     channel.setMethodCallHandler(pluginInstance.handleMethodCall);
   }
 

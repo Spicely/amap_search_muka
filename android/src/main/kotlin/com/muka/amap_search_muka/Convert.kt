@@ -98,21 +98,24 @@ class Convert {
             val arr = mutableListOf<Any>()
             result.forEachIndexed { _, it ->
                 run {
-                    val data = HashMap<String, Any>()
-                    data["adcode"] = it.adcode
-                    data["address"] = it.address
-                    data["district"] = it.district
+                    val data = HashMap<String, Any?>()
+                    data["id"] = it.poiID
                     data["name"] = it.name
-                    data["typecode"] = it.typeCode
-                    data["uid"] = it.poiID
+                    data["adCode"] = it.adcode
+                    data["address"] = it.address
+                    data["typeCode"] = it.typeCode
                     data["latLng"] = pointToMap(it.point)
+                    data["district"] = it.district
                     arr.add(data)
                 }
             }
             return arr
         }
 
-        private fun pointToMap(point: LatLonPoint): MutableMap<String, Any> {
+        private fun pointToMap(point: LatLonPoint?): MutableMap<String, Any>? {
+            if (point == null) {
+                return  null
+            }
             val pointMap: MutableMap<String, Any> = java.util.HashMap()
             pointMap["latitude"] = point.latitude
             pointMap["longitude"] = point.longitude

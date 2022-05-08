@@ -11,7 +11,7 @@ enum ConvertType {
   GOOGLE,
 }
 
-class AmapSearch {
+class AMapSearch {
   static const MethodChannel _channel = const MethodChannel('plugins.muka.com/amap_search');
 
   /// 设置Android和iOS的apikey，建议在weigdet初始化时设置<br>
@@ -24,117 +24,128 @@ class AmapSearch {
     _channel.invokeMethod('setApiKey', {'android': androidKey, 'ios': iosKey});
   }
 
-  /// 设置是否已经包含高德隐私政策并弹窗展示显示用户查看，如果未包含或者没有弹窗展示，高德定位SDK将不会工作<br>
-  /// 高德SDK合规使用方案请参考官网地址：https://lbs.amap.com/news/sdkhgsy<br>
-  /// <b>必须保证在调用定位功能之前调用， 建议首次启动App时弹出《隐私政策》并取得用户同意</b><br>
-  /// 高德SDK合规使用方案请参考官网地址：https://lbs.amap.com/news/sdkhgsy
-  /// [hasContains] 隐私声明中是否包含高德隐私政策说明<br>
-  /// [hasShow] 隐私权政策是否弹窗展示告知用户<br>
-  static void updatePrivacyShow(bool hasContains, bool hasShow) {
-    _channel.invokeMethod('updatePrivacyStatement', {'hasContains': hasContains, 'hasShow': hasShow});
+  /// 确保调用SDK任何接口前先调用更新隐私合规updatePrivacyShow、updatePrivacyAgree两个接口并且参数值都为true，若未正确设置有崩溃风险
+  static Future<void> updatePrivacyShow(bool hasContains, bool hasShow) async {
+    await _channel.invokeMethod('updatePrivacyShow', {
+      'hasContains': hasContains,
+      'hasShow': hasShow,
+    });
   }
 
-  /// 设置是否已经取得用户同意，如果未取得用户同意，高德定位SDK将不会工作<br>
-  /// 高德SDK合规使用方案请参考官网地址：https://lbs.amap.com/news/sdkhgsy<br>
-  /// <b>必须保证在调用定位功能之前调用, 建议首次启动App时弹出《隐私政策》并取得用户同意</b><br>
-  /// [hasAgree] 隐私权政策是否已经取得用户同意<br>
-  static void updatePrivacyAgree(bool hasAgree) {
-    _channel.invokeMethod('updatePrivacyStatement', {'hasAgree': hasAgree});
+  /// 确保调用SDK任何接口前先调用更新隐私合规updatePrivacyShow、updatePrivacyAgree两个接口并且参数值都为true，若未正确设置有崩溃风险
+  static Future<void> updatePrivacyAgree(bool hasAgree) async {
+    await _channel.invokeMethod('updatePrivacyAgree', {
+      'hasAgree': hasAgree,
+    });
   }
 
   /// 关键字搜索poi
   ///
-  /// 在城市[city]搜索关键字[keyword]的poi, 可以设置每页数量[pageSize](1-50)和第[page](1-100)页
+  /// [keyword] 关键字
+  ///
+  /// [types] 类型，多个类型用“|”分割 可选值:文本分类、分类代码
+  ///
+  /// [city] 城市名称
+  ///
+  /// [pageSize] 每页记录数, 范围1-25, [default = 20]
+  ///
+  /// [page] 当前页数, 范围1-100, [default = 1]
+  ///
+  /// [cityLimit] 强制城市限制功能 [default = false]，例如：在上海搜索天安门，如果citylimit为true，将不返回北京的天安门相关的POI
   static Future<List<AMapPoi>> searchKeyword(
     String keyword, {
-    String city = '',
+    String? city,
+    String? types,
     int pageSize = 20,
     int page = 1,
+    bool cityLimit = false,
   }) async {
-    assert(page > 0 && page < 100, '页数范围为1-100');
-    assert(pageSize > 0 && pageSize < 50, '每页大小范围为1-50');
-    final List? dataList =
-        await _channel.invokeMethod('searchKeyword', {'keyword': keyword, 'city': city, 'pageSize': pageSize, 'page': page});
-
-    return dataList?.map((e) {
-          return AMapPoi.fromJson(e);
-        }).toList() ??
-        [];
-  }
-
-  /// 依据坐标查询
-  ///
-  /// 可以设置每页数量[pageSize](1-50)和第[page](1-100)页
-  static Future<List<AMapPoi>> searchLatLng(
-    LatLng latLng, {
-    String city = '',
-    int pageSize = 20,
-    int page = 1,
-    int range = 2000,
-  }) async {
-    assert(page > 0 && page < 100, '页数范围为1-100');
-    assert(pageSize > 0 && pageSize < 50, '每页大小范围为1-50');
-    final List? dataList = await _channel.invokeMethod('searchLatLng', {
-      'latitude': latLng.latitude,
-      'longitude': latLng.longitude,
+    assert(page >= 1 && page <= 100, 'page must be between 1 and 100');
+    assert(pageSize >= 1 && pageSize <= 25, 'pageSize must be between 1 and 25');
+    final List? dataList = await _channel.invokeMethod('searchKeyword', {
+      'keyword': keyword,
       'city': city,
+      'types': types,
       'pageSize': pageSize,
       'page': page,
-      'range': range,
+      'cityLimit': cityLimit,
     });
 
-    return dataList?.map((e) {
-          return AMapPoi.fromJson(e);
-        }).toList() ??
-        [];
+    return dataList?.map((e) => AMapPoi.fromJson(e)).toList() ?? [];
   }
 
   /// 周边搜索poi
   ///
-  /// 在中心点[center]周边搜索关键字[keyword]和城市[city]的poi, 可以设置每页数量[pageSize](1-50)和第[page](1-100)页
+  /// [center] 中心点
+  ///
+  /// [keyword] 查询关键字，多个关键字用“|”分割
+  ///
+  /// [radius] 查询半径，范围：0-50000，单位：米 [default = 1500]
+  ///
+  /// [types] 类型，多个类型用“|”分割 可选值:文本分类、分类代码
+  ///
+  /// [city] 城市名称
+  ///
+  /// [pageSize] 每页记录数, 范围1-25, [default = 20]
+  ///
+  /// [page] 当前页数, 范围1-100, [default = 1]
   static Future<List<AMapPoi>> searchAround(
-    Location center, {
-    String keyword = '',
-    String city = '',
+    LatLng center, {
+    String? keyword,
+    String? city,
+    String? types,
     int pageSize = 20,
     int page = 1,
-    int radius = 1000,
+    int radius = 1500,
   }) async {
-    assert(page > 0 && page < 100, '页数范围为1-100');
-    assert(pageSize > 0 && pageSize < 50, '每页大小范围为1-50');
-
-    final List? dataList = await _channel.invokeMethod('searchAround',
-        {'keyword': keyword, 'city': city, 'pageSize': pageSize, 'page': page, 'longitude': center.longitude, 'latitude': center.latitude});
-    return dataList?.map((e) {
-          return AMapPoi.fromJson(e);
-        }).toList() ??
-        [];
+    assert(page >= 1 && page <= 100, 'page must be between 1 and 100');
+    assert(pageSize >= 1 && pageSize <= 25, 'pageSize must be between 1 and 25');
+    assert(radius >= 0 && radius <= 50000, 'radius must be between 0 and 50000');
+    final List? dataList = await _channel.invokeMethod('searchAround', {
+      'keyword': keyword,
+      'city': city,
+      'types': types,
+      'pageSize': pageSize,
+      'page': page,
+      'longitude': center.longitude,
+      'latitude': center.latitude,
+    });
+    return dataList?.map((e) => AMapPoi.fromJson(e)).toList() ?? [];
   }
 
   /// 输入内容自动提示
   ///
-  /// 输入关键字[keyword], 并且限制所在城市[city]
+  /// [keyword] 关键字
+  ///
+  /// [city] 城市名称
+  ///
+  /// [latLng] 如果设置，在此location附近优先返回搜索关键词信息
+  ///
+  /// [cityLimit] 强制城市限制功能 [default = false]，例如：在上海搜索天安门，如果citylimit为true，将不返回北京的天安门相关的POI
   static Future<List> fetchInputTips(
     String keyword, {
-    String city = '',
+    String? city,
     LatLng? latLng,
+    bool cityLimit = false,
   }) async {
-    final List? dataList = await _channel
-        .invokeMethod('fetchInputTips', {'keyword': keyword, 'city': city, 'latitude': latLng?.latitude, 'longitude': latLng?.longitude});
-    return dataList?.map((e) {
-          return AmapTips.fromJson(e);
-        }).toList() ??
-        [];
+    final List? dataList = await _channel.invokeMethod('fetchInputTips', {
+      'keyword': keyword,
+      'city': city,
+      'latitude': latLng?.latitude,
+      'longitude': latLng?.longitude,
+      'cityLimit': cityLimit,
+    });
+    return dataList?.map((e) => AMapTip.fromJson(e)).toList() ?? [];
   }
 
-  /// 地理编码（地址转坐标）
-  ///
-  /// 输入关键字[keyword], 并且限制所在城市[city]
-  static Future<List> searchGeocode(
-    String keyword, {
-    String city = '',
-  }) async {
-    final String? version = await _channel.invokeMethod('searchGeocode');
-    return [];
-  }
+  // /// 地理编码（地址转坐标）
+  // ///
+  // /// 输入关键字[keyword], 并且限制所在城市[city]
+  // static Future<List> searchGeocode(
+  //   String keyword, {
+  //   String city = '',
+  // }) async {
+  //   final String? version = await _channel.invokeMethod('searchGeocode');
+  //   return [];
+  // }
 }

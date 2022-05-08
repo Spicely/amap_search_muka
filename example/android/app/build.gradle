@@ -43,14 +43,28 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId "com.muka.example"
+        applicationId "com.android.YJZG"
         minSdkVersion flutter.minSdkVersion
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
 
+    signingConfigs{
+        release {
+            keyAlias 'yourapp.keystore'
+            keyPassword 'huangjin'
+            // 因为是放到父级的根目录，使用rootProject
+            // 如果放在这个build.gradle的同级，直接使用file
+            storeFile file('keystore/yourapp.keystore')
+            storePassword 'huangjin'
+        }
+    }
+
     buildTypes {
+         debug {
+            signingConfig signingConfigs.release
+        }
         release {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.

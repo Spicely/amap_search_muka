@@ -25,9 +25,8 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.Result
 
 
-
 /** AmapSearchMukaPlugin */
-class AmapSearchMukaPlugin : FlutterPlugin, MethodChannel.MethodCallHandler,  PoiSearch.OnPoiSearchListener,Inputtips.InputtipsListener {
+class AmapSearchMukaPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, PoiSearch.OnPoiSearchListener, Inputtips.InputtipsListener {
     /// The MethodChannel that will the communication between Flutter and native Android
     ///
     /// This local reference serves to register the plugin with the Flutter Engine and unregister it
@@ -40,18 +39,25 @@ class AmapSearchMukaPlugin : FlutterPlugin, MethodChannel.MethodCallHandler,  Po
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         mContext = flutterPluginBinding.applicationContext
         channel =
-            MethodChannel(flutterPluginBinding.binaryMessenger, "plugins.muka.com/amap_search")
+                MethodChannel(flutterPluginBinding.binaryMessenger, "plugins.muka.com/amap_search")
         channel!!.setMethodCallHandler(this)
     }
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
         when (call.method) {
-
             "setApiKey" -> {
                 setApiKey(call.arguments as Map<*, *>)
             }
-            "updatePrivacyStatement" -> {
-                updatePrivacyStatement(call.arguments as Map<*, *>)
+            "updatePrivacyShow" -> {
+                var hasContains: Boolean = call.argument("hasContains")!!
+                var hasShow: Boolean = call.argument("hasShow")!!
+                ServiceSettings.updatePrivacyShow(mContext, hasContains, hasShow)
+                result.success(null)
+            }
+            "updatePrivacyAgree" -> {
+                var hasAgree: Boolean = call.argument("hasAgree")!!
+                ServiceSettings.updatePrivacyAgree(mContext, hasAgree)
+                result.success(null)
             }
             "searchKeyword" -> {
                 try {
@@ -60,15 +66,6 @@ class AmapSearchMukaPlugin : FlutterPlugin, MethodChannel.MethodCallHandler,  Po
                     e.printStackTrace()
                 }
             }
-
-            "searchLatLng" -> {
-                try {
-                    searchLatLng(call.arguments as Map<*, *>, result)
-                } catch (e: AMapException) {
-                    e.printStackTrace()
-                }
-            }
-
             "searchAround" -> {
                 try {
                     searchAround(call.arguments as Map<*, *>, result)
@@ -90,7 +87,6 @@ class AmapSearchMukaPlugin : FlutterPlugin, MethodChannel.MethodCallHandler,  Po
     }
 
 
-
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
         channel?.setMethodCallHandler(null)
     }
@@ -110,25 +106,6 @@ class AmapSearchMukaPlugin : FlutterPlugin, MethodChannel.MethodCallHandler,  Po
     }
 
     /**
-     * 隐私政策设置
-     *
-     * @param
-     */
-    private fun updatePrivacyStatement(privacyShowMap: Map<*, *>?) {
-        if (null != privacyShowMap) {
-            if (privacyShowMap.containsKey("hasContains") && privacyShowMap.containsKey("hasShow")) {
-                val hasContains = privacyShowMap["hasContains"] as Boolean
-                val hasShow = privacyShowMap["hasShow"] as Boolean
-                ServiceSettings.updatePrivacyShow(mContext, hasContains, hasShow)
-            }
-            if (privacyShowMap.containsKey("hasAgree")) {
-                val hasAgree = privacyShowMap["hasAgree"] as Boolean
-                ServiceSettings.updatePrivacyAgree(mContext, hasAgree)
-            }
-        }
-    }
-
-    /**
      * POI 根据关键字搜索
      *
      * @param searchParams
@@ -136,33 +113,18 @@ class AmapSearchMukaPlugin : FlutterPlugin, MethodChannel.MethodCallHandler,  Po
     @Throws(AMapException::class)
     private fun searchKeyword(searchParams: Map<*, *>?, result: Result) {
         if (null != searchParams) {
-            val keyword = searchParams["keyword"] as String?
+            val keyword = searchParams["keyword"] as String
             val city = searchParams["city"] as String?
-            var pageSize = searchParams["pageSize"] ?: 20
-            var page = searchParams["page"] ?: 1
-            val query = PoiSearch.Query(keyword, "", city)
-            query.pageSize = pageSize as Int
-            query.pageNum = page as Int
+            var pageSize = searchParams["pageSize"] as Int
+            var page = searchParams["page"] as Int
+            var types = searchParams["types"]  as String?
+            var cityLimit = searchParams["cityLimit"] as Boolean
+
+            val query = PoiSearch.Query(keyword, types, city)
+            query.pageSize = pageSize
+            query.pageNum = page
+            query.cityLimit = cityLimit
             poiSearch = PoiSearch(mContext, query)
-            poiSearch!!.setOnPoiSearchListener(this)
-            poiSearch!!.searchPOIAsyn()
-            resultCallback = result
-        }
-    }
-    @Throws(AMapException::class)
-    private fun searchLatLng(searchParams: Map<*, *>?, result: Result) {
-        if (null != searchParams) {
-            val city = searchParams["city"] as String?
-            val latitude = searchParams["latitude"] as Double?
-            val longitude = searchParams["longitude"] as Double?
-            var pageSize = searchParams["pageSize"] ?: 20
-            var range = searchParams["range"] as Int?
-            var page = searchParams["page"] ?: 1
-            val query = PoiSearch.Query("", "", city)
-            query.pageSize = pageSize as Int
-            query.pageNum = page as Int
-            poiSearch = PoiSearch(mContext, query)
-            poiSearch!!.bound = PoiSearch.SearchBound(LatLonPoint(latitude!!, longitude!!), range?:2000)
             poiSearch!!.setOnPoiSearchListener(this)
             poiSearch!!.searchPOIAsyn()
             resultCallback = result
@@ -181,16 +143,22 @@ class AmapSearchMukaPlugin : FlutterPlugin, MethodChannel.MethodCallHandler,  Po
             val city = searchParams["city"] as String?
             val latitude = searchParams["latitude"] as Double?
             val longitude = searchParams["longitude"] as Double?
-            val query = PoiSearch.Query(keyword, "", city)
-            query.pageSize = 35
-            query.pageNum = 1
+            var types = searchParams["types"]  as String?
+            var radius = searchParams["radius"]  as Int
+            var pageSize = searchParams["pageSize"] as Int
+            var page = searchParams["page"] as Int
+
+            val query = PoiSearch.Query(keyword, types, city)
+            query.pageSize = pageSize
+            query.pageNum = page
             poiSearch = PoiSearch(mContext, query)
-            poiSearch!!.bound = PoiSearch.SearchBound(LatLonPoint(latitude!!, longitude!!), 1000)
+            poiSearch!!.bound = PoiSearch.SearchBound(LatLonPoint(latitude!!, longitude!!), radius)
             poiSearch!!.setOnPoiSearchListener(this)
             poiSearch!!.searchPOIAsyn()
             resultCallback = result
         }
     }
+
     @Throws(AMapException::class)
     private fun fetchInputTips(inputParams: Map<*, *>?, result: Result) {
         if (null != inputParams) {
@@ -198,14 +166,14 @@ class AmapSearchMukaPlugin : FlutterPlugin, MethodChannel.MethodCallHandler,  Po
             val city = inputParams["city"] as String?
             val latitude = inputParams["latitude"] as Double?
             val longitude = inputParams["longitude"] as Double?
-            val query = InputtipsQuery(keyword,  city)
+            val query = InputtipsQuery(keyword, city)
             if (city != null) {
                 query.cityLimit = true
             }
             if (latitude != null && longitude != null) {
                 query.location = LatLonPoint(latitude, longitude)
             }
-            val inputTips  = Inputtips(mContext, query)
+            val inputTips = Inputtips(mContext, query)
             inputTips.setInputtipsListener(this)
             inputTips.requestInputtipsAsyn()
             resultCallback = result
