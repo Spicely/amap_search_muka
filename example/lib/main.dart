@@ -61,7 +61,8 @@ class _MyAppState extends State<MyApp> {
               child: Text('获取POI'),
               onPressed: () async {
                 print('获取POI');
-                List<AMapPoi> poi = await AMapSearch.searchKeyword('饭店', city: '成都', types: '地铁');
+                List<AMapPoi> poi = await AMapSearch.searchKeyword('广场', city: '成都', page: 1, pageSize: 1);
+                print(poi.length);
                 poi.forEach((element) {
                   print(element.toJson());
                 });
@@ -71,7 +72,7 @@ class _MyAppState extends State<MyApp> {
               child: Text('附近POI'),
               onPressed: () async {
                 print('获取POI');
-                List<AMapPoi> poi = await AMapSearch.searchAround(LatLng(40.057598, 116.582822), types: '地铁');
+                List<AMapPoi> poi = await AMapSearch.searchAround(LatLng(30.68025, 104.080081), types: '火车站', radius: 10000);
                 poi.forEach((element) {
                   print(element.toJson());
                 });
@@ -81,7 +82,7 @@ class _MyAppState extends State<MyApp> {
               child: Text('获取输入提示'),
               onPressed: () async {
                 print('获取输入提示');
-                List<dynamic> pois = await AMapSearch.fetchInputTips('火车', city: '成都');
+                List<dynamic> pois = await AMapSearch.fetchInputTips('火车');
                 pois.forEach((element) {
                   print(element.toJson());
                 });

@@ -137,7 +137,7 @@ public class SwiftAmapSearchMukaPlugin: NSObject, FlutterPlugin, AMapSearchDeleg
             data["distance"] = it.distance
             data["parkingType"] = it.parkingType
             data["shopID"] = it.shopID
-            data["postcode"] = it.postcode
+            data["postCode"] = it.postcode
             data["website"] = it.website
             data["email"] = it.email
             data["province"] = it.province
@@ -165,7 +165,7 @@ public class SwiftAmapSearchMukaPlugin: NSObject, FlutterPlugin, AMapSearchDeleg
         if data == nil {
             return nil
         }
-        return ["floor": data!.floor,"floorName": data!.floorName as Any, "pid": data!.pid as Any, "description":data!.description]
+        return ["floor": data!.floor,"floorName": data!.floorName as Any, "id": data!.pid as Any, "description":data!.description]
     }
     
     private func tipsSearchResponseToObject(res: [AMapTip]) -> [Dictionary<String, Any>] {

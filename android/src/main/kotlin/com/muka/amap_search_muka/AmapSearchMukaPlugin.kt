@@ -3,6 +3,7 @@ package com.muka.amap_search_muka
 
 import android.content.Context
 import android.text.TextUtils
+import android.util.Log
 
 import androidx.annotation.NonNull
 
@@ -16,13 +17,11 @@ import com.amap.api.services.help.Tip
 import com.amap.api.services.poisearch.PoiResult
 import com.amap.api.services.poisearch.PoiSearch
 
-import java.util.ArrayList
-import java.util.HashMap
-
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.Result
+import java.util.*
 
 
 /** AmapSearchMukaPlugin */
@@ -114,12 +113,11 @@ class AmapSearchMukaPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, Poi
     private fun searchKeyword(searchParams: Map<*, *>?, result: Result) {
         if (null != searchParams) {
             val keyword = searchParams["keyword"] as String
-            val city = searchParams["city"] as String?
-            var pageSize = searchParams["pageSize"] as Int
-            var page = searchParams["page"] as Int
-            var types = searchParams["types"]  as String?
-            var cityLimit = searchParams["cityLimit"] as Boolean
-
+            val city = searchParams["city"] as String
+            val pageSize = searchParams["pageSize"] as Int
+            val page = searchParams["page"] as Int
+            val types = searchParams["types"] as String?
+            val cityLimit = searchParams["cityLimit"] as Boolean
             val query = PoiSearch.Query(keyword, types, city)
             query.pageSize = pageSize
             query.pageNum = page
@@ -139,12 +137,12 @@ class AmapSearchMukaPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, Poi
     @Throws(AMapException::class)
     private fun searchAround(searchParams: Map<*, *>?, result: Result) {
         if (null != searchParams) {
-            val keyword = searchParams["keyword"] as String?
-            val city = searchParams["city"] as String?
+            val keyword = searchParams["keyword"] as String
+            val city = searchParams["city"] as String
             val latitude = searchParams["latitude"] as Double?
             val longitude = searchParams["longitude"] as Double?
-            var types = searchParams["types"]  as String?
-            var radius = searchParams["radius"]  as Int
+            var types = searchParams["types"] as String
+            var radius = searchParams["radius"] as Int
             var pageSize = searchParams["pageSize"] as Int
             var page = searchParams["page"] as Int
 
@@ -166,13 +164,14 @@ class AmapSearchMukaPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, Poi
             val city = inputParams["city"] as String?
             val latitude = inputParams["latitude"] as Double?
             val longitude = inputParams["longitude"] as Double?
+            val cityLimit = inputParams["cityLimit"] as Boolean
+
             val query = InputtipsQuery(keyword, city)
-            if (city != null) {
-                query.cityLimit = true
-            }
             if (latitude != null && longitude != null) {
                 query.location = LatLonPoint(latitude, longitude)
             }
+            query.cityLimit = cityLimit
+
             val inputTips = Inputtips(mContext, query)
             inputTips.setInputtipsListener(this)
             inputTips.requestInputtipsAsyn()
@@ -183,10 +182,10 @@ class AmapSearchMukaPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, Poi
 
     override fun onPoiSearched(result: PoiResult, rCode: Int) {
         if (rCode != 1000) {
-            resultCallback?.success(emptyArray<Any>())
+            resultCallback?.success(mutableListOf<Any>())
         }
         if (result == null) {
-            resultCallback?.success(emptyArray<Any>())
+            resultCallback?.success(mutableListOf<Any>())
         } else {
             resultCallback?.success(Convert.toArr(result))
         }

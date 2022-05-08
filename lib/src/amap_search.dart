@@ -54,8 +54,8 @@ class AMapSearch {
   /// [cityLimit] 强制城市限制功能 [default = false]，例如：在上海搜索天安门，如果citylimit为true，将不返回北京的天安门相关的POI
   static Future<List<AMapPoi>> searchKeyword(
     String keyword, {
-    String? city,
-    String? types,
+    String city = '',
+    String types = '',
     int pageSize = 20,
     int page = 1,
     bool cityLimit = false,
@@ -91,9 +91,9 @@ class AMapSearch {
   /// [page] 当前页数, 范围1-100, [default = 1]
   static Future<List<AMapPoi>> searchAround(
     LatLng center, {
-    String? keyword,
-    String? city,
-    String? types,
+    String keyword = '',
+    String city = '',
+    String types = '',
     int pageSize = 20,
     int page = 1,
     int radius = 1500,
@@ -109,6 +109,7 @@ class AMapSearch {
       'page': page,
       'longitude': center.longitude,
       'latitude': center.latitude,
+      'radius': radius,
     });
     return dataList?.map((e) => AMapPoi.fromJson(e)).toList() ?? [];
   }
@@ -124,7 +125,7 @@ class AMapSearch {
   /// [cityLimit] 强制城市限制功能 [default = false]，例如：在上海搜索天安门，如果citylimit为true，将不返回北京的天安门相关的POI
   static Future<List> fetchInputTips(
     String keyword, {
-    String? city,
+    String city = '',
     LatLng? latLng,
     bool cityLimit = false,
   }) async {

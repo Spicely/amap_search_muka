@@ -1,15 +1,36 @@
 # amap_search_muka
 
-A new flutter plugin project.
+Flutter高德搜索插件
 
-## Getting Started
+## 引入方式
 
-This project is a starting point for a Flutter
-[plug-in package](https://flutter.dev/developing-packages/),
-a specialized package that includes platform-specific implementation code for
-Android and/or iOS.
+```
+    amap_location_muka: ^0.0.1
+```
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 支持
+ - [x] 关键字检索POI
+ - [x] 周边检索POI
+ - [x] 输入内容自动提示
 
+#### AMapSearch
+
+```
+    /// 设置key
+    AMapSearch.setApiKey("androidKey", "iosKey");
+
+    /// 隐私
+    AMapSearch.updatePrivacyShow(true, true);
+    AMapSearch.updatePrivacyAgree(true);
+
+
+    /// 关键字检索POI [得带上城市 不知道啥原因不带就为空]
+    AMapSearch.searchKeyword('广场', city: '成都', page: 1, pageSize: 1);
+
+    /// 周边检索POI
+    AMapSearch.searchAround(LatLng(30.68025, 104.080081), types: '火车站', radius: 10000);
+
+    /// 输入内容自动提示
+    AMapSearch.fetchInputTips('火车');
+
+```
