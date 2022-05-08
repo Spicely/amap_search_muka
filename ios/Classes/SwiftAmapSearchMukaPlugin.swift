@@ -36,20 +36,20 @@ public class SwiftAmapSearchMukaPlugin: NSObject, FlutterPlugin, AMapSearchDeleg
             let keyword = args?["keyword"] as? String
             let city = args?["city"] as? String?
             let types = args?["types"] as? String?
+            let cityLimit = args?["cityLimit"] as? Bool
             search = AMapSearchAPI()
             search!.delegate = self
             let geo = AMapPOIKeywordsSearchRequest()
             geo.keywords = keyword
             if city != nil{
                 geo.city = city!
-                geo.cityLimit = true
             }
             if types != nil {
                 geo.types = types!
-                
             }
+            geo.cityLimit = cityLimit!
             geo.requireExtension = true
-            geo.requireSubPOIs = true;
+            geo.requireSubPOIs = true
             search!.aMapPOIKeywordsSearch(geo)
             resultCallback = result
         case "searchAround":
@@ -60,6 +60,7 @@ public class SwiftAmapSearchMukaPlugin: NSObject, FlutterPlugin, AMapSearchDeleg
             let pageSize = args?["pageSize"] as? Int
             let latitude = args?["latitude"] as? Double
             let longitude = args?["longitude"] as? Double
+            let radius = args?["radius"] as? Int
             
             search = AMapSearchAPI()
             search!.delegate = self
@@ -76,6 +77,7 @@ public class SwiftAmapSearchMukaPlugin: NSObject, FlutterPlugin, AMapSearchDeleg
             }
             geo.page = page!
             geo.offset = pageSize!
+            geo.radius = radius!
             geo.requireExtension = true
             geo.requireSubPOIs = true;
             search!.aMapPOIAroundSearch(geo)
@@ -85,17 +87,18 @@ public class SwiftAmapSearchMukaPlugin: NSObject, FlutterPlugin, AMapSearchDeleg
             let city = args?["city"] as? String?
             let latitude = args?["latitude"] as? Double?
             let longitude = args?["longitude"] as? Double?
+            let cityLimit = args?["cityLimit"] as? Bool
             search = AMapSearchAPI()
             search!.delegate = self
             let geo = AMapInputTipsSearchRequest()
             geo.keywords = keyword
             if city != nil {
                 geo.city = city!
-                geo.cityLimit = true
             }
             if latitude != nil , longitude != nil {
                 geo.location = "\(String(describing: longitude)),\(String(describing: latitude))"
             }
+            geo.cityLimit = cityLimit!
             search!.aMapInputTipsSearch(geo)
             resultCallback = result
         default:
