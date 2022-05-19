@@ -11,7 +11,7 @@ enum ConvertType {
   GOOGLE,
 }
 
-class AMapSearch {
+class AmapSearch {
   static const MethodChannel _channel = const MethodChannel('plugins.muka.com/amap_search');
 
   /// 设置Android和iOS的apikey，建议在weigdet初始化时设置<br>

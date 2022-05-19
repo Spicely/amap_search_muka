@@ -13,9 +13,9 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   @override
   void initState() {
-    AMapSearch.updatePrivacyShow(true, true);
-    AMapSearch.updatePrivacyAgree(true);
-    AMapSearch.setApiKey('6e630e675873f2a548f55ba99ee8c571', '56250708b9588800db63161534716f8c');
+    AmapSearch.updatePrivacyShow(true, true);
+    AmapSearch.updatePrivacyAgree(true);
+    AmapSearch.setApiKey('6e630e675873f2a548f55ba99ee8c571', '56250708b9588800db63161534716f8c');
 
     super.initState();
   }
@@ -62,7 +62,7 @@ class _MyAppState extends State<MyApp> {
               child: Text('获取POI'),
               onPressed: () async {
                 print('获取POI');
-                List<AMapPoi> poi = await AMapSearch.searchKeyword('广场', city: '成都', page: 1, pageSize: 1);
+                List<AMapPoi> poi = await AmapSearch.searchKeyword('广场', city: '成都', page: 1, pageSize: 1);
                 print(poi.length);
                 poi.forEach((element) {
                   print(element.toJson());
@@ -73,7 +73,7 @@ class _MyAppState extends State<MyApp> {
               child: Text('附近POI'),
               onPressed: () async {
                 print('获取POI');
-                List<AMapPoi> poi = await AMapSearch.searchAround(LatLng(30.68025, 104.080081), types: '火车站', radius: 10000);
+                List<AMapPoi> poi = await AmapSearch.searchAround(LatLng(30.68025, 104.080081), types: '火车站', radius: 10000);
                 poi.forEach((element) {
                   print(element.toJson());
                 });
@@ -83,7 +83,7 @@ class _MyAppState extends State<MyApp> {
               child: Text('获取输入提示'),
               onPressed: () async {
                 print('获取输入提示');
-                List<dynamic> pois = await AMapSearch.fetchInputTips('火车');
+                List<dynamic> pois = await AmapSearch.fetchInputTips('火车');
                 pois.forEach((element) {
                   print(element.toJson());
                 });
