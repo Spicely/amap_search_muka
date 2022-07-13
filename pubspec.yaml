@@ -14,9 +14,9 @@ dependencies:
     sdk: flutter
 
   js: ^0.6.3
-  # amap_core: ^1.0.2
-  amap_core:
-    path: ../amap_core
+  amap_core: ^1.0.3
+  # amap_core:
+  #   path: ../amap_core
 
 dev_dependencies:
   flutter_test:
