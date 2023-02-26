@@ -4,9 +4,9 @@ packages:
   amap_core:
     dependency: transitive
     description:
-      path: "../../amap_core"
-      relative: true
-    source: path
+      name: amap_core
+      url: "https://pub.dartlang.org"
+    source: hosted
     version: "1.0.3"
   amap_search_muka:
     dependency: "direct main"
