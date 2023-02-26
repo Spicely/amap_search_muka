@@ -1,23 +1,44 @@
-import 'package:amap_search_muka/amap_search_muka.dart';
 import 'package:flutter/material.dart';
+import 'dart:async';
+
+import 'package:flutter/services.dart';
+import 'package:amap_search_muka/amap_search_muka.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
   @override
-  _MyAppState createState() => _MyAppState();
+  State<MyApp> createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
+  String _platformVersion = 'Unknown';
+
   @override
   void initState() {
-    AMapSearch.updatePrivacyShow(true, true);
-    AMapSearch.updatePrivacyAgree(true);
-    AMapSearch.setApiKey('6e630e675873f2a548f55ba99ee8c571', '56250708b9588800db63161534716f8c');
-
     super.initState();
+    initPlatformState();
+  }
+
+  // Platform messages are asynchronous, so we initialize in an async method.
+  Future<void> initPlatformState() async {
+    String platformVersion;
+    // Platform messages may fail, so we use a try/catch PlatformException.
+    // We also handle the message potentially returning null.
+    try {} on PlatformException {
+      platformVersion = 'Failed to get platform version.';
+    }
+
+    // If the widget was removed from the tree while the asynchronous platform
+    // message was in flight, we want to discard the reply rather than calling
+    // setState to update our non-existent appearance.
+    if (!mounted) return;
+
+    setState(() {});
   }
 
   @override
@@ -28,76 +49,8 @@ class _MyAppState extends State<MyApp> {
           title: const Text('Plugin example app'),
         ),
         body: Center(
-            child: Column(
-          children: <Widget>[
-            // ElevatedButton(
-            //   child: Text('坐标转换'),
-            //   onPressed: () async {
-            //     LatLng pos = await AMapSearch.convert(LatLng(40.012044, 116.332404), type: ConvertType.BAIDU);
-            //     print(pos.toJson());
-            //   },
-            // ),
-            // ElevatedButton(
-            //   child: Text('面积'),
-            //   onPressed: () async {
-            //     double area = await AMapSearch.calculateArea([
-            //       LatLng(39.932670, 116.169465),
-            //       LatLng(39.924492, 116.160260),
-            //       LatLng(39.710019, 116.150625),
-            //       LatLng(39.709920, 116.183198),
-            //       LatLng(39.777616, 116.226950),
-            //       LatLng(40.052578, 116.468800),
-            //     ]);
-            //     print(area);
-            //   },
-            // ),
-            // ElevatedButton(
-            //   child: Text('直线距离'),
-            //   onPressed: () async {
-            //     double distance = await AMapSearch.calculateLineDistance([LatLng(30.766903, 103.955872), LatLng(30.577889, 104.169418)]);
-            //     print(distance);
-            //   },
-            // ),
-            ElevatedButton(
-              child: Text('获取POI'),
-              onPressed: () async {
-                print('获取POI');
-                List<AMapPoi> poi = await AMapSearch.searchKeyword('广场', city: '成都', page: 1, pageSize: 1);
-                print(poi.length);
-                poi.forEach((element) {
-                  print(element.toJson());
-                });
-              },
-            ),
-            ElevatedButton(
-              child: Text('附近POI'),
-              onPressed: () async {
-                print('获取POI');
-                List<AMapPoi> poi = await AMapSearch.searchAround(LatLng(30.68025, 104.080081), types: '火车站', radius: 10000);
-                poi.forEach((element) {
-                  print(element.toJson());
-                });
-              },
-            ),
-            ElevatedButton(
-              child: Text('获取输入提示'),
-              onPressed: () async {
-                print('获取输入提示');
-                List<dynamic> pois = await AMapSearch.fetchInputTips('火车');
-                pois.forEach((element) {
-                  print(element.toJson());
-                });
-              },
-            ),
-            // ElevatedButton(
-            //   child: Text('逆地理编码'),
-            //   onPressed: () async {
-            //     ReGeocode reGeocode = await AMapSearch.reGeocodeSearch(LatLng(30.766903, 103.955872));
-            //     print(reGeocode.toJson());
-            //   },
-            // ),
-          ],
-        )),
+          child: Text('Running on: $_platformVersion\n'),
+        ),
       ),
     );
   }

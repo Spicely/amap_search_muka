@@ -27,6 +27,7 @@ apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
 android {
     compileSdkVersion flutter.compileSdkVersion
+    ndkVersion flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -43,28 +44,16 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId "com.android.YJZG"
+        applicationId "com.muka.amap_search_muka_example"
+        // You can update the following values to match your application needs.
+        // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
         minSdkVersion flutter.minSdkVersion
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
 
-    signingConfigs{
-        release {
-            keyAlias 'yourapp.keystore'
-            keyPassword 'huangjin'
-            // 因为是放到父级的根目录，使用rootProject
-            // 如果放在这个build.gradle的同级，直接使用file
-            storeFile file('keystore/yourapp.keystore')
-            storePassword 'huangjin'
-        }
-    }
-
     buildTypes {
-         debug {
-            signingConfig signingConfigs.release
-        }
         release {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.

@@ -51,14 +51,14 @@ class AMapSearch {
   ///
   /// [page] 当前页数, 范围1-100, [default = 1]
   ///
-  /// [cityLimit] 强制城市限制功能 [default = false]，例如：在上海搜索天安门，如果citylimit为true，将不返回北京的天安门相关的POI
+  /// [cityLimit] 强制城市限制功能 [default = true]，例如：在上海搜索天安门，如果cityLimit为false，将不返回北京的天安门相关的POI
   static Future<List<AMapPoi>> searchKeyword(
     String keyword, {
     String city = '',
     String types = '',
     int pageSize = 20,
     int page = 1,
-    bool cityLimit = false,
+    bool cityLimit = true,
   }) async {
     assert(page >= 1 && page <= 100, 'page must be between 1 and 100');
     assert(pageSize >= 1 && pageSize <= 25, 'pageSize must be between 1 and 25');
@@ -122,8 +122,12 @@ class AMapSearch {
   ///
   /// [latLng] 如果设置，在此location附近优先返回搜索关键词信息
   ///
+  /// [pageSize] 每页记录数, 范围1-25, [default = 20]
+  ///
+  /// [page] 当前页数, 范围1-100, [default = 1]
+  ///
   /// [cityLimit] 强制城市限制功能 [default = false]，例如：在上海搜索天安门，如果citylimit为true，将不返回北京的天安门相关的POI
-  static Future<List> fetchInputTips(
+  static Future<List<AMapTip>> fetchInputTips(
     String keyword, {
     String city = '',
     LatLng? latLng,

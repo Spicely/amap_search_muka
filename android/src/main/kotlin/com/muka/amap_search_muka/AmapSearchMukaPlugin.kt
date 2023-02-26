@@ -3,10 +3,7 @@ package com.muka.amap_search_muka
 
 import android.content.Context
 import android.text.TextUtils
-import android.util.Log
-
 import androidx.annotation.NonNull
-
 import com.amap.api.services.core.AMapException
 import com.amap.api.services.core.LatLonPoint
 import com.amap.api.services.core.PoiItem
@@ -16,7 +13,6 @@ import com.amap.api.services.help.InputtipsQuery
 import com.amap.api.services.help.Tip
 import com.amap.api.services.poisearch.PoiResult
 import com.amap.api.services.poisearch.PoiSearch
-
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -48,13 +44,13 @@ class AmapSearchMukaPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, Poi
                 setApiKey(call.arguments as Map<*, *>)
             }
             "updatePrivacyShow" -> {
-                var hasContains: Boolean = call.argument("hasContains")!!
-                var hasShow: Boolean = call.argument("hasShow")!!
+                val hasContains: Boolean = call.argument("hasContains")!!
+                val hasShow: Boolean = call.argument("hasShow")!!
                 ServiceSettings.updatePrivacyShow(mContext, hasContains, hasShow)
                 result.success(null)
             }
             "updatePrivacyAgree" -> {
-                var hasAgree: Boolean = call.argument("hasAgree")!!
+                val hasAgree: Boolean = call.argument("hasAgree")!!
                 ServiceSettings.updatePrivacyAgree(mContext, hasAgree)
                 result.success(null)
             }
@@ -141,10 +137,10 @@ class AmapSearchMukaPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, Poi
             val city = searchParams["city"] as String
             val latitude = searchParams["latitude"] as Double?
             val longitude = searchParams["longitude"] as Double?
-            var types = searchParams["types"] as String
-            var radius = searchParams["radius"] as Int
-            var pageSize = searchParams["pageSize"] as Int
-            var page = searchParams["page"] as Int
+            val types = searchParams["types"] as String
+            val radius = searchParams["radius"] as Int
+            val pageSize = searchParams["pageSize"] as Int
+            val page = searchParams["page"] as Int
 
             val query = PoiSearch.Query(keyword, types, city)
             query.pageSize = pageSize
