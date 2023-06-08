@@ -1,10 +1,12 @@
 import 'dart:async';
 
-import 'package:amap_core/amap_core.dart';
-import 'package:amap_search_muka/web/amap.dart';
 import 'package:flutter/services.dart';
+
+import 'package:amap_core/amap_core.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:js/js.dart';
+
+import 'package:amap_search_muka/web/amap.dart';
 
 import 'amap_search_muka.dart';
 
@@ -55,8 +57,7 @@ class AmapSearchMukaWeb {
       geolocation.getCurrentPosition(allowInterop((status, result) {
         if (status == 'complete') {
           completer.complete(Location(
-            latitude: result.position.lat,
-            longitude: result.position.lng,
+            latLng: LatLng(result.position.lat, result.position.lng),
             country: result.addressComponent.country,
             province: result.addressComponent.province,
             city: result.addressComponent.city,

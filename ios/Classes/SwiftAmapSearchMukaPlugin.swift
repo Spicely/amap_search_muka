@@ -48,8 +48,6 @@ public class SwiftAmapSearchMukaPlugin: NSObject, FlutterPlugin, AMapSearchDeleg
                 geo.types = types!
             }
             geo.cityLimit = cityLimit!
-            geo.requireExtension = true
-            geo.requireSubPOIs = true
             search!.aMapPOIKeywordsSearch(geo)
             resultCallback = result
         case "searchAround":
@@ -78,8 +76,6 @@ public class SwiftAmapSearchMukaPlugin: NSObject, FlutterPlugin, AMapSearchDeleg
             geo.page = page!
             geo.offset = pageSize!
             geo.radius = radius!
-            geo.requireExtension = true
-            geo.requireSubPOIs = true;
             search!.aMapPOIAroundSearch(geo)
             resultCallback = result
         case "fetchInputTips":
